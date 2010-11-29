@@ -14,14 +14,14 @@ module Rcov
   # refine the initial (incomplete) coverage information.
   #
   # Basic usage is as follows:
-  #  sf = FileStatistics.new("foo.rb", ["puts 1", "if true &&", "   false", 
+  #  sf = FileStatistics.new("foo.rb", ["puts 1", "if true &&", "   false",
   #                                 "puts 2", "end"],  [1, 1, 0, 0, 0])
   #  sf.num_lines        # => 5
   #  sf.num_code_lines   # => 5
   #  sf.coverage[2]      # => true
   #  sf.coverage[3]      # => :inferred
   #  sf.code_coverage    # => 0.6
-  #                    
+  #
   # The array of strings representing the source code and the array of execution
   # counts would normally be obtained from a Rcov::CodeCoverageAnalyzer.
   class FileStatistics
@@ -44,20 +44,20 @@ module Rcov
 
     # Merge code coverage and execution count information.
     # As for code coverage, a line will be considered
-    # * covered for sure (true) if it is covered in either +self+ or in the 
+    # * covered for sure (true) if it is covered in either +self+ or in the
     #   +coverage+ array
     # * considered <tt>:inferred</tt> if the neither +self+ nor the +coverage+ array
     #   indicate that it was definitely executed, but it was <tt>inferred</tt>
-    #   in either one 
+    #   in either one
     # * not covered (<tt>false</tt>) if it was uncovered in both
     #
     # Execution counts are just summated on a per-line basis.
     def merge(lines, coverage, counts)
       coverage.each_with_index do |v, idx|
         case @coverage[idx]
-        when :inferred 
+        when :inferred
           @coverage[idx] = v || @coverage[idx]
-        when false 
+        when false
           @coverage[idx] ||= v
         end
       end
@@ -110,6 +110,7 @@ module Rcov
         pending = []
         state = :code
         @lines.each_with_index do |line, index|
+          line.force_encoding("utf-8")
           case state
           when :code
             if /^=begin\b/ =~ line
@@ -126,7 +127,7 @@ module Rcov
           end
         end
       end
-      @lines[lineno] && !@is_begin_comment[lineno] && @lines[lineno] !~ /^\s*(#|$)/ 
+      @lines[lineno] && !@is_begin_comment[lineno] && @lines[lineno] !~ /^\s*(#|$)/
     end
 
     private
@@ -136,7 +137,7 @@ module Rcov
       wanted_delimiter = nil
       string_begin_line = 0
       @lines.each_with_index do |line, i|
-        matching_delimiters = Hash.new{|h,k| k} 
+        matching_delimiters = Hash.new{|h,k| k}
         matching_delimiters.update("{" => "}", "[" => "]", "(" => ")")
         case state
         when :awaiting_string
@@ -162,11 +163,11 @@ module Rcov
         end
       end
     end
-    
+
     def is_nocov?(line)
       line =~ /#:nocov:/
     end
-    
+
     def mark_nocov_regions(nocov_line_numbers, coverage)
       while nocov_line_numbers.size > 0
         begin_line, end_line = nocov_line_numbers.shift, nocov_line_numbers.shift
@@ -189,7 +190,7 @@ module Rcov
         end
       end
       nocov_line_numbers = []
-      
+
       (0...lines.size).each do |i|
         nocov_line_numbers << i if is_nocov?(@lines[i])
 
@@ -201,20 +202,20 @@ module Rcov
           /^\s*rescue\b/ =~ line && next_expr_marked?(i) or
           /(do|\{)\s*(\|[^|]*\|\s*)?(?:#.*)?$/ =~ line && next_expr_marked?(i) or
           prev_expr_continued?(i) && prev_expr_marked?(i) or
-          comments_run_by_default && !is_code?(i) or 
+          comments_run_by_default && !is_code?(i) or
           /^\s*((\)|\]|\})\s*)+(?:#.*)?$/ =~ line && prev_expr_marked?(i) or
           prev_expr_continued?(i+1) && next_expr_marked?(i)
           @coverage[i] ||= :inferred
           changed = true
         end
-        
+
       end
 
       mark_nocov_regions(nocov_line_numbers, @coverage)
-      
+
       (@lines.size-1).downto(0) do |i|
         next if @coverage[i]
-        if !is_code?(i) and @coverage[i+1] 
+        if !is_code?(i) and @coverage[i+1]
           @coverage[i] = :inferred
           changed = true
         end
@@ -312,7 +313,7 @@ module Rcov
       return false if lineno <= 0
       return false if lineno >= @lines.size
       found = false
-      if @multiline_string_start[lineno] && 
+      if @multiline_string_start[lineno] &&
         @multiline_string_start[lineno] < lineno
         return true
       end
@@ -320,7 +321,7 @@ module Rcov
       idx = (lineno-1).downto(0) do |i|
         if @heredoc_start[i]
           found = true
-          break @heredoc_start[i] 
+          break @heredoc_start[i]
         end
         next unless is_code? i
         found = true
@@ -336,7 +337,7 @@ module Rcov
       r = /(,|\.|\+|-|\*|\/|<|>|%|&&|\|\||<<|\(|\[|\{|=|and|or|\\)\s*(?:#(?![{$@]).*)?$/.match @lines[idx]
       # try to see if a multi-line expression with opening, closing delimiters
       # started on that line
-      [%w!( )!].each do |opening_str, closing_str| 
+      [%w!( )!].each do |opening_str, closing_str|
         # conservative: only consider nesting levels opened in that line, not
         # previous ones too.
         # next regexp considers interpolation too

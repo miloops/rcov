@@ -13,13 +13,13 @@ module Rcov
   # == Example
   #
   #  analyzer = Rcov::CodeCoverageAnalyzer.new
-  #  analyzer.run_hooked do 
-  #    do_foo  
+  #  analyzer.run_hooked do
+  #    do_foo
   #    # all the code executed as a result of this method call is traced
   #  end
   #  # ....
-  #  
-  #  analyzer.run_hooked do 
+  #
+  #  analyzer.run_hooked do
   #    do_bar
   #    # the code coverage information generated in this run is aggregated
   #    # to the previously recorded one
@@ -29,7 +29,7 @@ module Rcov
   #  lines, marked_info, count_info = analyzer.data("foo.rb")
   #
   # In this example, two pieces of code are monitored, and the data generated in
-  # both runs are aggregated. +lines+ is an array of strings representing the 
+  # both runs are aggregated. +lines+ is an array of strings representing the
   # source code of <tt>foo.rb</tt>. +marked_info+ is an array holding false,
   # true values indicating whether the corresponding lines of code were reported
   # as executed by Ruby. +count_info+ is an array of integers representing how
@@ -49,19 +49,19 @@ module Rcov
     @hook_level = 0
     # defined this way instead of attr_accessor so that it's covered
     def self.hook_level      # :nodoc:
-      @hook_level 
+      @hook_level
     end
-     
-    def self.hook_level=(x)  # :nodoc: 
-      @hook_level = x 
-    end 
+
+    def self.hook_level=(x)  # :nodoc:
+      @hook_level = x
+    end
 
     def initialize
       @script_lines__ = SCRIPT_LINES__
       super(:install_coverage_hook, :remove_coverage_hook,
             :reset_coverage)
     end
-  
+
     # Return an array with the names of the files whose code was executed inside
     # the block given to #run_hooked or between #install_hook and #remove_hook.
     def analyzed_files
@@ -75,7 +75,7 @@ module Rcov
     # code was executed or it cannot be found.
     # The return value is an array with three elements:
     #  lines, marked_info, count_info = analyzer.data("foo.rb")
-    # +lines+ is an array of strings representing the 
+    # +lines+ is an array of strings representing the
     # source code of <tt>foo.rb</tt>. +marked_info+ is an array holding false,
     # true values indicating whether the corresponding lines of code were reported
     # as executed by Ruby. +count_info+ is an array of integers representing how
@@ -89,9 +89,9 @@ module Rcov
     def data(filename)
       raw_data = raw_data_relative
       update_script_lines__
-      unless @script_lines__.has_key?(filename) && 
+      unless @script_lines__.has_key?(filename) &&
              raw_data.has_key?(filename)
-        return nil 
+        return nil
       end
       refine_coverage_info(@script_lines__[filename], raw_data[filename])
     end
@@ -138,7 +138,7 @@ module Rcov
         lines = @script_lines__[file]
         raw_coverage_array = raw_data_relative[file]
 
-        line_info, marked_info, 
+        line_info, marked_info,
           count_info = refine_coverage_info(lines, raw_coverage_array)
         formatters.each do |formatter|
           formatter.add_file(file, line_info, marked_info, count_info)
@@ -158,7 +158,7 @@ module Rcov
     def aggregate_data(aggregated_data, delta)
       delta.each_pair do |file, cov_arr|
         dest = (aggregated_data[file] ||= Array.new(cov_arr.size, 0))
-        cov_arr.each_with_index do |x,i| 
+        cov_arr.each_with_index do |x,i|
           dest[i] ||= 0
           dest[i] += x.to_i
         end
@@ -205,7 +205,7 @@ module Rcov
         break false unless line_info.size % div == 0 && n > 1
         different = false
         n.times do |i|
-        
+
           things = (0...div).map { |j| line_info[i + j * n] }
           if things.uniq.size != 1
             different = true
@@ -255,7 +255,7 @@ module Rcov
     end
 
     def correct_script_lines__
-      return unless JRUBY_VERSION && JRUBY_VERSION < "1.5.3"
+      return unless defined?(JRUBY_VERSION) && JRUBY_VERSION && JRUBY_VERSION < "1.5.3"
       SCRIPT_LINES__.each_key do |file|
         next unless File.exists? file
         lines = []
